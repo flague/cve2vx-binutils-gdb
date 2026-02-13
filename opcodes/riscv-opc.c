@@ -313,6 +313,14 @@ match_c_addi4spn (const struct riscv_opcode *op, insn_t insn)
   return match_opcode (op, insn) && EXTRACT_CIWTYPE_ADDI4SPN_IMM (insn) != 0;
 }
 
+/* This requires a non-zero shift.  A zero rd is a hint, so is allowed.  */
+
+static int
+match_c_slli (const struct riscv_opcode *op, insn_t insn)
+{
+  return match_opcode (op, insn) && EXTRACT_CITYPE_IMM (insn) != 0;
+}
+
 /* This requires a non-zero rd, and a non-zero shift.  */
 
 static int
@@ -1191,12 +1199,12 @@ const struct riscv_opcode riscv_opcodes[] =
 {"c.and",      0, INSN_CLASS_ZCA,   "Cs,Ct",     MATCH_C_AND, MASK_C_AND, match_opcode, 0 },
 {"c.or",       0, INSN_CLASS_ZCA,   "Cs,Ct",     MATCH_C_OR, MASK_C_OR, match_opcode, 0 },
 {"c.xor",      0, INSN_CLASS_ZCA,   "Cs,Ct",     MATCH_C_XOR, MASK_C_XOR, match_opcode, 0 },
-{"c.slli",     0, INSN_CLASS_ZCA,   "d,C>",      MATCH_C_SLLI, MASK_C_SLLI, match_opcode, 0 },
-{"c.srli",     0, INSN_CLASS_ZCA,   "Cs,C>",     MATCH_C_SRLI, MASK_C_SRLI, match_opcode, 0 },
-{"c.srai",     0, INSN_CLASS_ZCA,   "Cs,C>",     MATCH_C_SRAI, MASK_C_SRAI, match_opcode, 0 },
-{"c.slli64",   0, INSN_CLASS_ZCA,   "d",         MATCH_C_SLLI64, MASK_C_SLLI64, match_c_slli64, INSN_ALIAS }, /* Deprecated.  */
-{"c.srli64",   0, INSN_CLASS_ZCA,   "Cs",        MATCH_C_SRLI64, MASK_C_SRLI64, match_c_slli64, INSN_ALIAS }, /* Deprecated.  */
-{"c.srai64",   0, INSN_CLASS_ZCA,   "Cs",        MATCH_C_SRAI64, MASK_C_SRAI64, match_c_slli64, INSN_ALIAS }, /* Deprecated.  */
+{"c.slli",     0, INSN_CLASS_ZCA,   "d,C>",      MATCH_C_SLLI, MASK_C_SLLI, match_c_slli, 0 },
+{"c.srli",     0, INSN_CLASS_ZCA,   "Cs,C>",     MATCH_C_SRLI, MASK_C_SRLI, match_c_slli, 0 },
+{"c.srai",     0, INSN_CLASS_ZCA,   "Cs,C>",     MATCH_C_SRAI, MASK_C_SRAI, match_c_slli, 0 },
+{"c.slli64",   0, INSN_CLASS_ZCA,   "d",         MATCH_C_SLLI64, MASK_C_SLLI64, match_c_slli64, 0 },
+{"c.srli64",   0, INSN_CLASS_ZCA,   "Cs",        MATCH_C_SRLI64, MASK_C_SRLI64, match_c_slli64, 0 },
+{"c.srai64",   0, INSN_CLASS_ZCA,   "Cs",        MATCH_C_SRAI64, MASK_C_SRAI64, match_c_slli64, 0 },
 {"c.andi",     0, INSN_CLASS_ZCA,   "Cs,Co",     MATCH_C_ANDI, MASK_C_ANDI, match_opcode, 0 },
 {"c.addiw",   64, INSN_CLASS_ZCA,   "d,Co",      MATCH_C_ADDIW, MASK_C_ADDIW, match_rd_nonzero, 0 },
 {"c.addw",    64, INSN_CLASS_ZCA,   "Cs,Ct",     MATCH_C_ADDW, MASK_C_ADDW, match_opcode, 0 },
@@ -3525,7 +3533,6 @@ const struct riscv_opcode riscv_opcodes[] =
 {"vt.maskcn",  64, INSN_CLASS_XVENTANACONDOPS, "d,s,t", MATCH_VT_MASKCN, MASK_VT_MASKCN, match_opcode, 0 },
 
 
-
 /* Vendor-specific subset from NM-Carus custom vector instructions */
 {"xvadd.vv",          0, INSN_CLASS_V,  "tVm",        MATCH_XVADD_VV,          MASK_XVADD_VV,          match_opcode, 0 },
 {"xvadd.vx",          0, INSN_CLASS_V,  "t,sVm",      MATCH_XVADD_VX,          MASK_XVADD_VX,          match_opcode, 0 },
@@ -3541,6 +3548,40 @@ const struct riscv_opcode riscv_opcodes[] =
 {"xvxor.vv",          0, INSN_CLASS_V,  "tVm",        MATCH_XVXOR_VV,          MASK_XVXOR_VV,          match_opcode, 0 },
 {"xvxor.vx",          0, INSN_CLASS_V,  "t,sVm",      MATCH_XVXOR_VX,          MASK_XVXOR_VX,          match_opcode, 0 },
 {"xvxor.vi",          0, INSN_CLASS_V,  "t,ViVm",     MATCH_XVXOR_VI,          MASK_XVXOR_VI,          match_opcode, 0 },
+{"xvmseq.vv",         0, INSN_CLASS_V,  "tVm",        MATCH_XVMSEQVV,           MASK_XVMSEQVV,          match_opcode, 0 },
+{"xvmseq.vx",         0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMSEQVX,           MASK_XVMSEQVX,          match_opcode, 0 },
+{"xvmseq.vi",         0, INSN_CLASS_V,  "t,ViVm",     MATCH_XVMSEQVI,           MASK_XVMSEQVI,          match_opcode, 0 },
+{"xvmsne.vv",         0, INSN_CLASS_V,  "tVm",        MATCH_XVMSNEVV,           MASK_XVMSNEVV,          match_opcode, 0 },
+{"xvmsne.vx",         0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMSNEVX,           MASK_XVMSNEVX,          match_opcode, 0 },
+{"xvmsne.vi",         0, INSN_CLASS_V,  "t,ViVm",     MATCH_XVMSNEVI,           MASK_XVMSNEVI,          match_opcode, 0 },
+{"xvmsltu.vv",        0, INSN_CLASS_V,  "tVm",        MATCH_XVMSLTUVV,          MASK_XVMSLTUVV,         match_opcode, 0 },
+{"xvmsltu.vx",        0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMSLTUVX,          MASK_XVMSLTUVX,         match_opcode, 0 },
+{"xvmslt.vv",         0, INSN_CLASS_V,  "tVm",        MATCH_XVMSLTVV,           MASK_XVMSLTVV,          match_opcode, 0 },
+{"xvmslt.vx",         0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMSLTVX,           MASK_XVMSLTVX,          match_opcode, 0 },
+{"xvmsleu.vv",        0, INSN_CLASS_V,  "tVm",        MATCH_XVMSLEUVV,          MASK_XVMSLEUVV,         match_opcode, 0 },
+{"xvmsleu.vx",        0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMSLEUVX,          MASK_XVMSLEUVX,         match_opcode, 0 },
+{"xvmsleu.vi",        0, INSN_CLASS_V,  "t,ViVm",     MATCH_XVMSLEUVI,          MASK_XVMSLEUVI,         match_opcode, 0 },
+{"xvmsle.vv",         0, INSN_CLASS_V,  "tVm",        MATCH_XVMSLEVV,           MASK_XVMSLEVV,          match_opcode, 0 },
+{"xvmsle.vx",         0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMSLEVX,           MASK_XVMSLEVX,          match_opcode, 0 },
+{"xvmsle.vi",         0, INSN_CLASS_V,  "t,ViVm",     MATCH_XVMSLEVI,           MASK_XVMSLEVI,          match_opcode, 0 },
+{"xvmsgtu.vx",        0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMSGTUVX,          MASK_XVMSGTUVX,         match_opcode, 0 },
+{"xvmsgtu.vi",        0, INSN_CLASS_V,  "t,ViVm",     MATCH_XVMSGTUVI,          MASK_XVMSGTUVI,         match_opcode, 0 },
+{"xvmsgt.vx",         0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMSGTVX,           MASK_XVMSGTVX,          match_opcode, 0 },
+{"xvmsgt.vi",         0, INSN_CLASS_V,  "t,ViVm",     MATCH_XVMSGTVI,           MASK_XVMSGTVI,          match_opcode, 0 },
+{"xvmsgt.vv",         0, INSN_CLASS_V,  "tVm",        MATCH_XVMSLTVV,           MASK_XVMSLTVV,          match_opcode, INSN_ALIAS },
+{"xvmsgtu.vv",        0, INSN_CLASS_V,  "tVm",        MATCH_XVMSLTUVV,          MASK_XVMSLTUVV,         match_opcode, INSN_ALIAS },
+{"xvmsge.vv",         0, INSN_CLASS_V,  "tVm",        MATCH_XVMSLEVV,           MASK_XVMSLEVV,          match_opcode, INSN_ALIAS },
+{"xvmsgeu.vv",        0, INSN_CLASS_V,  "tVm",        MATCH_XVMSLEUVV,          MASK_XVMSLEUVV,         match_opcode, INSN_ALIAS },
+{"xvmslt.vi",         0, INSN_CLASS_V,  "t,ViVm",     MATCH_XVMSLEVI,           MASK_XVMSLEVI,          match_opcode, INSN_ALIAS },
+{"xvmsltu.vi",        0, INSN_CLASS_V,  "t,0Vm",      MATCH_XVMSNEVV,           MASK_XVMSNEVV,          match_vs1_eq_vs2, INSN_ALIAS },
+{"xvmsltu.vi",        0, INSN_CLASS_V,  "t,ViVm",     MATCH_XVMSLEUVI,          MASK_XVMSLEUVI,         match_opcode, INSN_ALIAS },
+{"xvmsge.vi",         0, INSN_CLASS_V,  "t,ViVm",     MATCH_XVMSGTVI,           MASK_XVMSGTVI,          match_opcode, INSN_ALIAS },
+{"xvmsgeu.vi",        0, INSN_CLASS_V,  "t,0Vm",      MATCH_XVMSEQVV,           MASK_XVMSEQVV,          match_vs1_eq_vs2, INSN_ALIAS },
+{"xvmsgeu.vi",        0, INSN_CLASS_V,  "t,ViVm",     MATCH_XVMSGTUVI,          MASK_XVMSGTUVI,         match_opcode, INSN_ALIAS },
+{"xvmsge.vx",         0, INSN_CLASS_V, "t,sVm", 0,    (int) M_VMSGE, NULL, INSN_MACRO },
+{"xvmsge.vx",         0, INSN_CLASS_V, "t,s,VM,VT", 0, (int) M_VMSGE, NULL, INSN_MACRO },
+{"xvmsgeu.vx",        0, INSN_CLASS_V, "t,sVm", 1,    (int) M_VMSGE, NULL, INSN_MACRO },
+{"xvmsgeu.vx",        0, INSN_CLASS_V, "t,s,VM,VT", 1, (int) M_VMSGE, NULL, INSN_MACRO },
 {"xvmax.vv",          0, INSN_CLASS_V,  "tVm",        MATCH_XVMAX_VV,          MASK_XVMAX_VV,          match_opcode, 0 },
 {"xvmax.vx",          0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMAX_VX,          MASK_XVMAX_VX,          match_opcode, 0 },
 {"xvmaxu.vv",         0, INSN_CLASS_V,  "tVm",        MATCH_XVMAXU_VV,         MASK_XVMAXU_VV,         match_opcode, 0 },
@@ -3551,6 +3592,12 @@ const struct riscv_opcode riscv_opcodes[] =
 {"xvminu.vx",         0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMINU_VX,         MASK_XVMINU_VX,         match_opcode, 0 },
 {"xvmul.vv",          0, INSN_CLASS_V,  "tVm",        MATCH_XVMUL_VV,          MASK_XVMUL_VV,          match_opcode, 0 },
 {"xvmul.vx",          0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMUL_VX,          MASK_XVMUL_VX,          match_opcode, 0 },
+{"xvmulh.vv",         0, INSN_CLASS_V,  "tVm",        MATCH_XVMULH_VV,         MASK_XVMULH_VV,         match_opcode, 0 },
+{"xvmulh.vx",         0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMULH_VX,         MASK_XVMULH_VX,         match_opcode, 0 },
+{"xvmulhu.vv",        0, INSN_CLASS_V,  "tVm",        MATCH_XVMULHU_VV,        MASK_XVMULHU_VV,        match_opcode, 0 },
+{"xvmulhu.vx",        0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMULHU_VX,        MASK_XVMULHU_VX,        match_opcode, 0 },
+{"xvmulhsu.vv",       0, INSN_CLASS_V,  "tVm",        MATCH_XVMULHSU_VV,       MASK_XVMULHSU_VV,       match_opcode, 0 },
+{"xvmulhsu.vx",       0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMULHSU_VX,       MASK_XVMULHSU_VX,       match_opcode, 0 },
 {"xvmacc.vv",         0, INSN_CLASS_V,  "tVm",        MATCH_XVMACC_VV,         MASK_XVMACC_VV,         match_opcode, 0 },
 {"xvmacc.vx",         0, INSN_CLASS_V,  "t,sVm",      MATCH_XVMACC_VX,         MASK_XVMACC_VX,         match_opcode, 0 },
 {"xvmv.v.v",          0, INSN_CLASS_V,  "t",          MATCH_XVMV_V_V,          MASK_XVMV_V_V,          match_opcode, 0 },
@@ -3566,6 +3613,7 @@ const struct riscv_opcode riscv_opcodes[] =
 {"xvse8.v",           0, INSN_CLASS_V,  "t,0(s)Vm",   MATCH_XVSE8_V,           MASK_XVSE8_V,           match_opcode, 0 },
 {"xvse16.v",          0, INSN_CLASS_V,  "t,0(s)Vm",   MATCH_XVSE16_V,          MASK_XVSE16_V,          match_opcode, 0 },
 {"xvse32.v",          0, INSN_CLASS_V,  "t,0(s)Vm",   MATCH_XVSE32_V,          MASK_XVSE32_V,          match_opcode, 0 },
+
 /* Vendor-specific (SiFive) vector coprocessor interface instructions.  */
 {"sf.vc.x",     0, INSN_CLASS_XSFVCP, "XsO2,Xst,Xsd,s",  MATCH_SF_VC_X, MASK_SF_VC_X, match_opcode, 0 },
 {"sf.vc.v.x",   0, INSN_CLASS_XSFVCP, "XsO2,Xst,Vd,s",  MATCH_SF_VC_V_X, MASK_SF_VC_V_X, match_opcode, 0 },
